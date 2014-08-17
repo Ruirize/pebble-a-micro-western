@@ -1,0 +1,96 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "ruirize@gmail.com",
+    "longName": "A Pebble Western",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/logo.png",
+                "menuIcon": true,
+                "name": "IMAGE_LOGO",
+                "type": "png"
+            },
+            {
+                "file": "images/status.png",
+                "name": "IMAGE_STATUS",
+                "type": "png"
+            },
+            {
+                "file": "images/open.png",
+                "name": "IMAGE_HAND_OPEN",
+                "type": "png"
+            },
+            {
+                "file": "images/closed.png",
+                "name": "IMAGE_HAND_CLOSED",
+                "type": "png"
+            },
+            {
+                "file": "images/lose.png",
+                "name": "IMAGE_SCREEN_LOSE",
+                "type": "png"
+            },
+            {
+                "file": "images/hit.png",
+                "name": "IMAGE_SCREEN_HIT",
+                "type": "png"
+            },
+            {
+                "file": "images/win.png",
+                "name": "IMAGE_SCREEN_WIN",
+                "type": "png"
+            },
+            {
+                "file": "images/shot.png",
+                "name": "IMAGE_SCREEN_SHOT",
+                "type": "png"
+            },
+            {
+                "file": "images/resting.png",
+                "name": "IMAGE_SCREEN_RESTING",
+                "type": "png"
+            },
+            {
+                "file": "images/rip.png",
+                "name": "IMAGE_ICON_RIP",
+                "type": "png"
+            },
+            {
+                "file": "images/check.png",
+                "name": "IMAGE_ICON_CHECK",
+                "type": "png"
+            },
+            {
+                "file": "images/go.png",
+                "name": "IMAGE_ICON_GO",
+                "type": "png"
+            },
+            {
+                "file": "images/3.png",
+                "name": "IMAGE_ICON_3",
+                "type": "png"
+            },
+            {
+                "file": "images/2.png",
+                "name": "IMAGE_ICON_2",
+                "type": "png"
+            },
+            {
+                "file": "images/1.png",
+                "name": "IMAGE_ICON_1",
+                "type": "png"
+            }
+        ]
+    },
+    "shortName": "Western",
+    "uuid": "618c856b-b05a-4bab-be36-970c9e48f4ab",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
