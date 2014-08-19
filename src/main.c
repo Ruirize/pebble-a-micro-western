@@ -3,9 +3,9 @@
 #define DIFFICULTY_BASE 100
 
 #define STATE_RESTING 0
-#define STATE_COUNTDOWN_3 1
+#define STATE_COUNTDOWN_1 1
 #define STATE_COUNTDOWN_2 2
-#define STATE_COUNTDOWN_1 3
+#define STATE_COUNTDOWN_3 3
 #define STATE_COUNTDOWN_WAIT 4
 #define STATE_COUNTDOWN_GO 5
 #define STATE_SHOT 6
@@ -31,6 +31,7 @@ static GBitmap *image_lose;
 static GBitmap *image_closed;
 static GBitmap *image_open;
 static GBitmap *image_status;
+static GBitmap *image_wait;
 
 static Window *window;
 static GRect window_frame;
@@ -48,35 +49,35 @@ static void game_update(void *data) {
 	app_log(APP_LOG_LEVEL_DEBUG, "main.c", 42, "Game state update!");
 	switch(game_state) {
 		case STATE_RESTING:
-			game_state = STATE_COUNTDOWN_3;
-			app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
-		 layer_mark_dirty(game_layer);
-		break;
-		case STATE_COUNTDOWN_3:
-			if (game_hand_open) {
-				game_state = STATE_COUNTDOWN_2;
-				game_hand_open = false;
-			} else { game_hand_open = true; }
-			app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
-		 layer_mark_dirty(game_layer);
-		break;
-		case STATE_COUNTDOWN_2:
-			if (game_hand_open) {
-				game_state = STATE_COUNTDOWN_1;
-				game_hand_open = false;
-			} else { game_hand_open = true; }
-			app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
+			game_state = STATE_COUNTDOWN_1;
+			game_timer = app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
 		 layer_mark_dirty(game_layer);
 		break;
 		case STATE_COUNTDOWN_1:
 			if (game_hand_open) {
+				game_state = STATE_COUNTDOWN_2;
+				game_hand_open = false;
+			} else { game_hand_open = true; }
+			game_timer = app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
+		 layer_mark_dirty(game_layer);
+		break;
+		case STATE_COUNTDOWN_2:
+			if (game_hand_open) {
+				game_state = STATE_COUNTDOWN_3;
+				game_hand_open = false;
+			} else { game_hand_open = true; }
+			game_timer = app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
+		 layer_mark_dirty(game_layer);
+		break;
+		case STATE_COUNTDOWN_3:
+			if (game_hand_open) {
 				game_state = STATE_COUNTDOWN_WAIT;
 				game_hand_open = false;
-				app_timer_register(WAIT_COUNTDOWN + (rand() % 5001), game_update, NULL);
+				game_timer = app_timer_register(WAIT_COUNTDOWN + (rand() % 5001), game_update, NULL);
 				layer_mark_dirty(game_layer);
 			} else {
 				game_hand_open = true; 
-				app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
+				game_timer = app_timer_register(WAIT_COUNTDOWN / 2, game_update, NULL);
 		 	layer_mark_dirty(game_layer);
 			}
 		break;
@@ -90,13 +91,14 @@ static void game_update(void *data) {
 		case STATE_COUNTDOWN_GO:
 			layer_mark_dirty(game_layer);
 			game_waiting_for_reaction = false;
+			vibes_short_pulse();
 			if (game_player_reacted) {
 				game_state = STATE_SHOT;
-				app_timer_register(WAIT_RESULT, game_update, NULL);
+				game_timer = app_timer_register(WAIT_RESULT, game_update, NULL);
 				layer_mark_dirty(game_layer);
 			} else {
 				game_state = STATE_HIT;
-				app_timer_register(WAIT_RESULT, game_update, NULL);
+				game_timer = app_timer_register(WAIT_RESULT, game_update, NULL);
 				layer_mark_dirty(game_layer);
 			}
 		break;
@@ -104,14 +106,14 @@ static void game_update(void *data) {
 		case STATE_SHOT:
 			game_state = STATE_WIN;
 			game_wins++;
-			app_timer_register(WAIT_RESTING, game_update, NULL);
+			game_timer = app_timer_register(WAIT_RESTING, game_update, NULL);
 			layer_mark_dirty(game_layer);
 		break;
 		
 		case STATE_HIT:
 			game_state = STATE_LOSE;
 			game_wins = 0;
-			app_timer_register(WAIT_RESTING, game_update, NULL);
+			game_timer = app_timer_register(WAIT_RESTING, game_update, NULL);
 			layer_mark_dirty(game_layer);
 		break;
 		
@@ -119,7 +121,7 @@ static void game_update(void *data) {
 		case STATE_LOSE:
 			game_state = STATE_RESTING;
 		 if (game_wins < 3) {
-				app_timer_register(WAIT_COUNTDOWN, game_update, NULL);
+				game_timer = app_timer_register(WAIT_COUNTDOWN, game_update, NULL);
 				layer_mark_dirty(game_layer);
 			}
 		break;
@@ -142,6 +144,10 @@ static void game_start() {
 
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
 	Window *window = (Window *)context;
+	
+	if (!game_waiting_for_reaction && game_state <= STATE_COUNTDOWN_1) {
+		
+	}
 	
 	if (game_waiting_for_reaction && game_state == STATE_COUNTDOWN_GO) {
 		game_player_reacted = true;
@@ -168,12 +174,14 @@ static void game_draw(Layer *me, GContext* ctx) {
 			graphics_draw_bitmap_in_rect(ctx, image_resting, (GRect){.origin=(GPoint){0,0},  .size=(GSize){144,140}});
 			graphics_draw_bitmap_in_rect(ctx, image_status,  (GRect){.origin=(GPoint){0,140},.size=(GSize){144,28}});
 		break;
-		case STATE_COUNTDOWN_3:
+		case STATE_COUNTDOWN_1:
 			graphics_draw_bitmap_in_rect(ctx, image_resting, (GRect){.origin=(GPoint){0,0},  .size=(GSize){144,140}});
 			graphics_draw_bitmap_in_rect(ctx, image_status,  (GRect){.origin=(GPoint){0,140},.size=(GSize){144,28}});
-			graphics_draw_bitmap_in_rect(ctx, image_3, (GRect){.origin=(GPoint){41,147},  .size=(GSize){8,13}});
+			graphics_draw_bitmap_in_rect(ctx, image_1, (GRect){.origin=(GPoint){41,147},  .size=(GSize){8,13}});
 			if (game_hand_open) {
 				graphics_draw_bitmap_in_rect(ctx, image_open, (GRect){.origin=(GPoint){29,76},  .size=(GSize){47,39}});
+			} else {
+				graphics_draw_bitmap_in_rect(ctx, image_wait, (GRect){.origin=(GPoint){56,147},  .size=(GSize){28,13}});
 			}
 		break;
 		case STATE_COUNTDOWN_2:
@@ -182,26 +190,30 @@ static void game_draw(Layer *me, GContext* ctx) {
 			graphics_draw_bitmap_in_rect(ctx, image_2, (GRect){.origin=(GPoint){41,147},  .size=(GSize){8,13}});
 			if (game_hand_open) {
 				graphics_draw_bitmap_in_rect(ctx, image_open, (GRect){.origin=(GPoint){29,76},  .size=(GSize){47,39}});
+			} else {
+				graphics_draw_bitmap_in_rect(ctx, image_wait, (GRect){.origin=(GPoint){56,147},  .size=(GSize){28,13}});
 			}
 		break;
-		case STATE_COUNTDOWN_1:
+		case STATE_COUNTDOWN_3:
 			graphics_draw_bitmap_in_rect(ctx, image_resting, (GRect){.origin=(GPoint){0,0},  .size=(GSize){144,140}});
 			graphics_draw_bitmap_in_rect(ctx, image_status,  (GRect){.origin=(GPoint){0,140},.size=(GSize){144,28}});
-			graphics_draw_bitmap_in_rect(ctx, image_1, (GRect){.origin=(GPoint){41,147},  .size=(GSize){8,13}});
+			graphics_draw_bitmap_in_rect(ctx, image_3, (GRect){.origin=(GPoint){41,147},  .size=(GSize){8,13}});
 			if (game_hand_open) {
 				graphics_draw_bitmap_in_rect(ctx, image_open, (GRect){.origin=(GPoint){29,76},  .size=(GSize){47,39}});
+			} else {
+				graphics_draw_bitmap_in_rect(ctx, image_wait, (GRect){.origin=(GPoint){56,147},  .size=(GSize){28,13}});
 			}
 		break;
 		case STATE_COUNTDOWN_WAIT:
 			graphics_draw_bitmap_in_rect(ctx, image_resting, (GRect){.origin=(GPoint){0,0},  .size=(GSize){144,140}});
 			graphics_draw_bitmap_in_rect(ctx, image_status,  (GRect){.origin=(GPoint){0,140},.size=(GSize){144,28}});
-			graphics_draw_bitmap_in_rect(ctx, image_open, (GRect){.origin=(GPoint){29,76},  .size=(GSize){47,39}});
+			graphics_draw_bitmap_in_rect(ctx, image_wait, (GRect){.origin=(GPoint){56,147},  .size=(GSize){28,13}});
 		break;
 		case STATE_COUNTDOWN_GO:
 			graphics_draw_bitmap_in_rect(ctx, image_resting, (GRect){.origin=(GPoint){0,0},  .size=(GSize){144,140}});
 			graphics_draw_bitmap_in_rect(ctx, image_status,  (GRect){.origin=(GPoint){0,140},.size=(GSize){144,28}});
 			graphics_draw_bitmap_in_rect(ctx, image_open, (GRect){.origin=(GPoint){29,76},  .size=(GSize){47,39}});
-			graphics_draw_bitmap_in_rect(ctx, image_go, (GRect){.origin=(GPoint){41,147},  .size=(GSize){14,13}});
+			graphics_draw_bitmap_in_rect(ctx, image_go, (GRect){.origin=(GPoint){39,147},  .size=(GSize){43,13}});
 		break;
 		
 		case STATE_SHOT:
@@ -274,6 +286,7 @@ static void init(void) {
 	image_closed = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_HAND_CLOSED);
 	image_open = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_HAND_OPEN);
 	image_status = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_STATUS);
+	image_wait = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WAIT);
 }
 
 static void deinit(void) {
@@ -291,6 +304,7 @@ static void deinit(void) {
 	gbitmap_destroy(image_closed);
 	gbitmap_destroy(image_open);
 	gbitmap_destroy(image_status);
+	gbitmap_destroy(image_wait);
 
  window_destroy(window);
 }

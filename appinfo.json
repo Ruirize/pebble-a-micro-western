@@ -9,6 +9,11 @@
     "resources": {
         "media": [
             {
+                "file": "images/wait.png",
+                "name": "IMAGE_WAIT",
+                "type": "png"
+            },
+            {
                 "file": "images/logo.png",
                 "menuIcon": true,
                 "name": "IMAGE_LOGO",
@@ -89,7 +94,7 @@
     "shortName": "Western",
     "uuid": "618c856b-b05a-4bab-be36-970c9e48f4ab",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.10",
     "watchapp": {
         "watchface": false
     }
