@@ -4,10 +4,15 @@
         ""
     ],
     "companyName": "ruirize@gmail.com",
-    "longName": "A Pebble Western",
+    "longName": "A Micro Western",
     "projectType": "native",
     "resources": {
         "media": [
+            {
+                "file": "images/splash.png",
+                "name": "IMAGE_SPLASH",
+                "type": "png"
+            },
             {
                 "file": "images/wait.png",
                 "name": "IMAGE_WAIT",
@@ -91,10 +96,11 @@
             }
         ]
     },
+    "sdkVersion": "2",
     "shortName": "Western",
     "uuid": "618c856b-b05a-4bab-be36-970c9e48f4ab",
     "versionCode": 1,
-    "versionLabel": "1.10",
+    "versionLabel": "1.50",
     "watchapp": {
         "watchface": false
     }
