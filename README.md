@@ -1,2 +1,2 @@
-pebble-a-pebble-western
+pebble-a-micro-western
 =======================
